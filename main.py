@@ -4,8 +4,7 @@ import os
 import shutil
 from PIL import Image, ImageTk
 
-# Store path of uploaded PDF
-pdf_path = None
+pdf_path = None     # Store path of uploaded PDF
 
 window = tk.Tk()
 window.title("PDF Audio")
@@ -14,7 +13,7 @@ window.resizable(False, False)
 
 # Function to handle PDF upload
 def upload_pdf():
-    global pdf_path
+    global pdf_path, condition
     file_path = filedialog.askopenfilename(
         filetypes=[("PDF files", "*.pdf")],
         title="Select a PDF file"
@@ -25,6 +24,10 @@ def upload_pdf():
         # Reset previoud display
         text_frame.pack_forget()
         control_frame.pack_forget()
+        
+        # Reset play/pause button text
+        pause_play_button.config(image=play_icon)
+
 
         pdf_label.config(text=os.path.basename(pdf_path))
 
@@ -52,22 +55,29 @@ def find_img(loc, size):
     img = Image.open(loc).resize(size)
     return ImageTk.PhotoImage(img)
 
-# Function to rewind or forward audio
+# TODO: Function to rewind or forward audio
 def rewind(direction):
     pass
 
 # Function to play or pause audio
 def play_pause():
-    pass
+    if pause_play_button.image == play_icon:
+        pause_play_button.config(image=pause_icon)
+        pause_play_button.image = pause_icon
+        # TODO: pause audio playback
+    else:
+        pause_play_button.config(image=play_icon)
+        pause_play_button.image = play_icon
+        # TODO: resume audio playback
 
 
 # Function to generate navigation icons for audio playback
 def generate_icons():
     convert_btn.pack_forget()
     control_frame.pack()
-    back_button.pack(side="left", padx=10, pady=5)
+    back_button.pack(side="left", padx=13, pady=5)
     pause_play_button.pack(side="left")
-    forward_button.pack(side="left", padx=10, pady=5)
+    forward_button.pack(side="left", padx=13, pady=5)
 
 
 # Function to extract text from PDF
@@ -96,7 +106,8 @@ title = tk.Label(
 title.pack(pady=20)
 
 # Upload pdf Button
-upload = tk.Button(window, text="Upload PDF", command=upload_pdf)
+upload_icon = find_img("./Assets/upload.png", (50, 50))
+upload = tk.Button(window, image=upload_icon, command=upload_pdf, bd=0)
 upload.pack(pady=10)
 
 # Main frame for icon, controls, and text
@@ -130,12 +141,15 @@ back_button = tk.Button(
     bd=0,
 )
 
+play_icon = find_img("./Assets/play.png", (35, 35))
+pause_icon = find_img("./Assets/pause.png", (35, 35))
 pause_play_button = tk.Button(
     control_frame,
-    text="Play",
-    width=15,
+    image=play_icon,
+    bd=0,
     command=play_pause,
 )
+pause_play_button.image = play_icon  # Keep reference to the image
 
 forward_button = tk.Button(
     control_frame,
