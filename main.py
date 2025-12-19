@@ -102,11 +102,20 @@ def convert_audio():
 # Title Label
 title = tk.Label(
     window,
-    text="Welcome to PDF Audio Application",
-    fg="blue",
-    font=("Arial", 16, "bold"),
+    text="Transform PDFs into Audio",
+    fg="#5B4B8A",
+    font=("Arial", 18, "bold"),
 )
-title.pack(pady=20)
+title.pack(pady=(20,10))
+
+subtitle = tk.Label(
+    window,
+    text="upload, convert, and listen on the go",
+    fg="#7B68B8",  # Medium purple
+    font=("Arial", 11),
+    bg=window_bg,
+)
+subtitle.pack(pady=(0,10))
 
 # Upload pdf Button
 upload_icon = find_img("./Assets/upload.png", (50, 50))
