@@ -21,8 +21,14 @@ def upload_pdf():
     )
     if file_path:
         pdf_path = file_path
+
+        # Reset previoud display
+        text_frame.pack_forget()
+        control_frame.pack_forget()
+
         pdf_label.config(text=os.path.basename(pdf_path))
 
+        
         # Display PDF icon and filename
         pdf_canvas.pack(side="left")
         pdf_label.pack(side="left", padx=5)
@@ -46,34 +52,21 @@ def find_img(loc, size):
     img = Image.open(loc).resize(size)
     return ImageTk.PhotoImage(img)
 
+# Function to rewind or forward audio
 def rewind(direction):
     pass
 
+# Function to play or pause audio
+def play_pause():
+    pass
+
+
 # Function to generate navigation icons for audio playback
 def generate_icons():
-    convert_btn.pack_forget()                                       # remove convert button after conversion
+    convert_btn.pack_forget()
     control_frame.pack()
-    back_icon = find_img("./Assets/rewind.png", (24, 24))
-    forward_icon = find_img("./Assets/fastforward.png", (24, 24))
-
-    # Button to rewind 5 seconds
-    back_button = tk.Button(
-        control_frame,
-        image=back_icon,
-        command=rewind("back"),
-        bd=0,
-    )
-    back_button.image = back_icon                                   # keep img reference
     back_button.pack(side="left", padx=10, pady=5)
-
-    # Button to forward 5 seconds
-    forward_button = tk.Button(
-        control_frame,
-        image=forward_icon,
-        command=rewind("forward"),
-        bd=0,
-    )      
-    forward_button.image = forward_icon                                 # keep img reference
+    pause_play_button.pack(side="left")
     forward_button.pack(side="left", padx=10, pady=5)
 
 
@@ -125,6 +118,31 @@ pdf_label.bind("<Button-1>", lambda e: save_pdf())                              
 
 # Control frame for backward, pause/play, and forward buttons
 control_frame = tk.Frame(main_frame)
+
+# Load navigation icons
+back_icon = find_img("./Assets/rewind.png", (30, 30))
+forward_icon = find_img("./Assets/fastforward.png", (30, 30))
+
+back_button = tk.Button(
+    control_frame,
+    image=back_icon,
+    command=rewind("back"),
+    bd=0,
+)
+
+pause_play_button = tk.Button(
+    control_frame,
+    text="Play",
+    width=15,
+    command=play_pause,
+)
+
+forward_button = tk.Button(
+    control_frame,
+    image=forward_icon,
+    command=rewind("forward"),
+    bd=0,
+)
 
 
 # Convert pdf text audio
