@@ -7,6 +7,9 @@ from PIL import Image, ImageTk
 pdf_path = None     # Store path of uploaded PDF
 
 window = tk.Tk()
+window_bg = "#F5F3FF"
+window.config(bg=window_bg)
+
 window.title("PDF Audio")
 window.minsize(600, 500)
 window.resizable(False, False)
@@ -173,5 +176,22 @@ text_area = tk.Text(
     spacing2=5,
     spacing3=15,
 )
+
+
+# Update all frames and labels background color
+main_frame.config(bg=window_bg)
+pdf_frame.config(bg=window_bg)
+control_frame.config(bg=window_bg)
+text_frame.config(bg=window_bg)
+text_area.config(bg="#FEFCFF", fg="#3A3A3A")
+title.config(bg=window_bg)
+pdf_label.config(bg=window_bg)
+
+# Update buttons background color
+upload.config(bg=window_bg, activebackground=window_bg)
+convert_btn.config(bg=window_bg, activebackground=window_bg)
+back_button.config(bg=window_bg, activebackground=window_bg)
+forward_button.config(bg=window_bg, activebackground=window_bg)
+pause_play_button.config(bg=window_bg, activebackground=window_bg)
 
 window.mainloop()
