@@ -9,8 +9,8 @@ pdf_path = None     # Store path of uploaded PDF
 window = tk.Tk()
 window_bg = "#F5F3FF"
 window.config(bg=window_bg)
-
-window.title("PDF Audio")
+window.iconbitmap("./Assets/audio.ico")
+window.title("DocAudio - PDF to Audio")
 window.minsize(600, 500)
 window.resizable(False, False)
 
