@@ -3,6 +3,7 @@ from tkinter import filedialog
 import os
 import shutil
 from PIL import Image, ImageTk
+import pdfplumber
 
 pdf_path = None     # Store path of uploaded PDF
 
@@ -31,11 +32,8 @@ def upload_pdf():
         # Reset play/pause button text
         pause_play_button.config(image=play_icon)
 
-
+        # Update PDF filename label
         pdf_label.config(text=os.path.basename(pdf_path))
-
-        
-        # Display PDF icon and filename
         pdf_canvas.pack(side="left")
         pdf_label.pack(side="left", padx=5)
         convert_btn.pack()
@@ -84,8 +82,14 @@ def generate_icons():
 
 
 # Function to extract text from PDF
-def get_text_from_pdf(path):
-    pass
+def get_text_from_pdf():
+    global pdf_path
+    text = ""
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            text += page.extract_text()
+    print(text)
+    return text
 
 
 # Function to convert PDF text to audio
@@ -97,6 +101,13 @@ def convert_audio():
         pady=5,
         fill="both",
     )
+    
+    # Extract text from PDF and display it
+    extracted_text = get_text_from_pdf()
+    text_area.config(state="normal")        # Temporarily enable to insert text
+    text_area.delete("1.0", "end")          # Clear any existing text
+    text_area.insert("1.0", extracted_text) # Insert extracted text
+    text_area.config(state="disabled")      # Disable editing again
 
 
 # Title Label
@@ -181,7 +192,7 @@ text_area = tk.Text(
     height=10,
     width=65,
     wrap="word",            # wrap text by word within the text area
-    state="normal",
+    state="disabled",      # disable editing of text area
     spacing2=5,
     spacing3=15,
 )
