@@ -88,8 +88,10 @@ def get_text_from_pdf():
     with pdfplumber.open(pdf_path) as pdf:
         for page in pdf.pages:
             text += page.extract_text()
-    print(text)
-    return text
+    # cleaned_text = clean_text(text)
+    clean_text = text.replace('\n', ' ').strip()
+    print(clean_text)
+    return clean_text
 
 
 # Function to convert PDF text to audio
@@ -104,10 +106,10 @@ def convert_audio():
     
     # Extract text from PDF and display it
     extracted_text = get_text_from_pdf()
-    text_area.config(state="normal")        # Temporarily enable to insert text
-    text_area.delete("1.0", "end")          # Clear any existing text
-    text_area.insert("1.0", extracted_text) # Insert extracted text
-    text_area.config(state="disabled")      # Disable editing again
+    text_area.config(state="normal")        # temporarily enable to insert text
+    text_area.delete("1.0", "end")          # clear any existing text
+    text_area.insert("1.0", extracted_text) # insert extracted text
+    text_area.config(state="disabled")      # disable editing again
 
 
 # Title Label
@@ -192,7 +194,7 @@ text_area = tk.Text(
     height=10,
     width=65,
     wrap="word",            # wrap text by word within the text area
-    state="disabled",      # disable editing of text area
+    state="disabled",      # disable editing initially
     spacing2=5,
     spacing3=15,
 )
