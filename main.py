@@ -4,8 +4,13 @@ import os
 import shutil
 from PIL import Image, ImageTk
 import pdfplumber
+from gtts import gTTS
+from pydub import AudioSegment
+import pygame
 
-pdf_path = None     # Store path of uploaded PDF
+pdf_path = None                     # Store path of uploaded PDF
+audio_file = "./Assets/audio.mp3"   # audio file path
+audio_ready = False                 # Flag to check if audio is ready
 
 window = tk.Tk()
 window_bg = "#F5F3FF"
@@ -62,15 +67,19 @@ def rewind(direction):
 
 # Function to play or pause audio
 def play_pause():
-    if pause_play_button.image == play_icon:
+    global audio_ready
+    if not audio_ready:
+        return
+    if pygame.mixer.music.get_busy():
+        # Currently playing, so pause
+        pygame.mixer.music.pause()
         pause_play_button.config(image=pause_icon)
         pause_play_button.image = pause_icon
-        # TODO: pause audio playback
     else:
+        # Currently paused, so play
+        pygame.mixer.music.unpause()
         pause_play_button.config(image=play_icon)
         pause_play_button.image = play_icon
-        # TODO: resume audio playback
-
 
 # Function to generate navigation icons for audio playback
 def generate_icons():
@@ -96,6 +105,7 @@ def get_text_from_pdf():
 
 # Function to convert PDF text to audio
 def convert_audio():
+    global audio_ready, player
     text_frame.pack(pady=10)
     generate_icons()
     text_area.pack(
@@ -110,6 +120,18 @@ def convert_audio():
     text_area.delete("1.0", "end")          # clear any existing text
     text_area.insert("1.0", extracted_text) # insert extracted text
     text_area.config(state="disabled")      # disable editing again
+
+    # Generate audio file
+    tts = gTTS(text=extracted_text, lang="en", slow=False)
+    tts.save(audio_file)
+
+    # Convert to wav for better compatibility
+    sound = AudioSegment.from_mp3(audio_file)
+    sound.export(audio_file, format="wav")
+
+    pygame.mixer.init()
+    pygame.mixer.music.load(audio_file)
+    audio_ready = True
 
 
 # Title Label
