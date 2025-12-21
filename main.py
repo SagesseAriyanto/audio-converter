@@ -157,6 +157,8 @@ pdf_canvas = tk.Canvas(pdf_frame, width=25, height=25)
 pdf_canvas.create_image(12.5, 12.5, image=pdf_icon_photo)
 
 pdf_label = tk.Label(pdf_frame, cursor="hand2", font=("Arial", 10, "bold"))
+pdf_label.bind("<Button-1>", lambda e: save_pdf())                                       # make label clickable to save PDF for review
+
 
 # Control frame for backward, pause/play, and forward buttons
 control_frame = tk.Frame(main_frame)
@@ -179,7 +181,6 @@ speed_combo = ttk.Combobox(
 )
 speed_combo.set("normal")
 speed_combo.config(state="readonly")
-speed_combo.bind("<<ComboboxSelected>>", lambda e: speed_combo.selection_clear())
 
 
 # Convert pdf text audio
