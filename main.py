@@ -7,8 +7,9 @@ import pdfplumber
 import pyttsx3
 import threading
 
-pdf_path = None                     # Store path of uploaded PDF
-extracted_text = ""                 # Store extracted PDF text
+pdf_path = None  # Store path of uploaded PDF
+extracted_text = ""  # Store extracted PDF text
+engine = None  # Text-to-speech engine instance
 
 window = tk.Tk()
 window_bg = "#F5F3FF"
@@ -18,12 +19,12 @@ window.title("DocAudio - PDF to Audio")
 window.minsize(600, 500)
 window.resizable(False, False)
 
+
 # Function to handle PDF upload
 def upload_pdf():
     global pdf_path, condition
     file_path = filedialog.askopenfilename(
-        filetypes=[("PDF files", "*.pdf")],
-        title="Select a PDF file"
+        filetypes=[("PDF files", "*.pdf")], title="Select a PDF file"
     )
     if file_path:
         pdf_path = file_path
@@ -31,7 +32,7 @@ def upload_pdf():
         # Reset previoud display
         text_frame.pack_forget()
         control_frame.pack_forget()
-        
+
         # Reset play/pause button text
         pause_play_button.config(image=play_icon)
 
@@ -41,6 +42,7 @@ def upload_pdf():
         pdf_label.pack(side="left", padx=5)
         convert_btn.pack()
 
+
 # Function to save PDF for review
 def save_pdf():
     if pdf_path:
@@ -49,10 +51,11 @@ def save_pdf():
             defaultextension=".pdf",
             initialfile=filename,
             filetypes=[("PDF files", "*.pdf")],
-            title="Save PDF for Review"
+            title="Save PDF for Review",
         )
     if save_path:
-        shutil.copy(pdf_path, save_path)            # copy the PDF to the selected location
+        shutil.copy(pdf_path, save_path)  # copy the PDF to the selected location
+
 
 # Function to find and resize image
 def find_img(loc, size):
@@ -60,17 +63,43 @@ def find_img(loc, size):
     return ImageTk.PhotoImage(img)
 
 
+
+
+
+
+
+
+
+
+
+
+# Funtion to get speech rate based on user selection
+def get_speed_rate():
+    speed_map = {"slow": 120, "normal": 172, "fast": 210}
+    return speed_map[speed_combo.get()]
+
+# Function to handle speed change event
+def on_speed_change(event):
+    global engine
+    if engine:
+        engine.stop()
+        pause_play_button.config(image=play_icon)
+        pause_play_button.image = play_icon
+
+
 # Function to play or pause audio
 def play_stop():
-    global extracted_text
-    engine = pyttsx3.init()
-    voices = engine.getProperty("voices")
-    engine.setProperty("voice", voices[1].id)
-    engine.setProperty("rate", 172)
-    engine.setProperty("volume", 0.9)
+    global extracted_text, engine
 
     # If icon is play, start playing audio
     if pause_play_button.image == play_icon:
+        # Create fresh engine with new speed
+        engine = pyttsx3.init()
+        voices = engine.getProperty("voices")
+        engine.setProperty("voice", voices[1].id)
+        engine.setProperty("rate", get_speed_rate())
+        engine.setProperty("volume", 0.9)
+        
         pause_play_button.config(image=stop_icon)
         pause_play_button.image = stop_icon
         # Re-queue the text and run in separate thread
@@ -78,9 +107,22 @@ def play_stop():
         threading.Thread(target=engine.runAndWait, daemon=True).start()
     else:
         # If icon is stop, stop playing audio
+        if engine:
+            engine.stop()
         pause_play_button.config(image=play_icon)
         pause_play_button.image = play_icon
-        engine.stop()
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Function to generate navigation icons for audio playback
@@ -99,8 +141,9 @@ def get_text_from_pdf():
         for page in pdf.pages:
             text += page.extract_text()
     # cleaned_text = clean_text(text)
-    clean_text = text.replace('\n', ' ').strip()
+    clean_text = text.replace("\n", " ").strip()
     return clean_text
+
 
 # Function to convert PDF text to audio
 def convert_audio():
@@ -115,10 +158,11 @@ def convert_audio():
 
     # Extract text from PDF and display it
     extracted_text = get_text_from_pdf()
-    text_area.config(state="normal")        # temporarily enable to insert text
-    text_area.delete("1.0", "end")          # clear any existing text
-    text_area.insert("1.0", extracted_text) # insert extracted text
-    text_area.config(state="disabled")      # disable editing again
+    text_area.config(state="normal")  # temporarily enable to insert text
+    text_area.delete("1.0", "end")  # clear any existing text
+    text_area.insert("1.0", extracted_text)  # insert extracted text
+    text_area.config(state="disabled")  # disable editing again
+
 
 # Title Label
 title = tk.Label(
@@ -127,7 +171,7 @@ title = tk.Label(
     fg="#5B4B8A",
     font=("Arial", 18, "bold"),
 )
-title.pack(pady=(20,10))
+title.pack(pady=(20, 10))
 
 subtitle = tk.Label(
     window,
@@ -136,7 +180,7 @@ subtitle = tk.Label(
     font=("Arial", 11),
     bg=window_bg,
 )
-subtitle.pack(pady=(0,10))
+subtitle.pack(pady=(0, 10))
 
 # Upload pdf Button
 upload_icon = find_img("./Assets/upload.png", (50, 50))
@@ -157,7 +201,9 @@ pdf_canvas = tk.Canvas(pdf_frame, width=25, height=25)
 pdf_canvas.create_image(12.5, 12.5, image=pdf_icon_photo)
 
 pdf_label = tk.Label(pdf_frame, cursor="hand2", font=("Arial", 10, "bold"))
-pdf_label.bind("<Button-1>", lambda e: save_pdf())                                       # make label clickable to save PDF for review
+pdf_label.bind(
+    "<Button-1>", lambda e: save_pdf()
+)  # make label clickable to save PDF for review
 
 
 # Control frame for backward, pause/play, and forward buttons
@@ -177,14 +223,19 @@ pause_play_button.image = play_icon  # Keep reference to the image
 
 # Speed dropdown menu
 speed_combo = ttk.Combobox(
-    control_frame, values=["slow", "normal", "fast"], width=8,
+    control_frame,
+    values=["slow", "normal", "fast"],
+    width=8,
 )
 speed_combo.set("normal")
 speed_combo.config(state="readonly")
+speed_combo.bind("<<ComboboxSelected>>", on_speed_change)
 
 
 # Convert pdf text audio
-convert_btn = tk.Button(window, text="Convert PDF to Audio", width=25, command=convert_audio)
+convert_btn = tk.Button(
+    window, text="Convert PDF to Audio", width=25, command=convert_audio
+)
 
 # Text area to display pdf content
 text_frame = tk.Frame(window)
@@ -192,8 +243,8 @@ text_area = tk.Text(
     text_frame,
     height=10,
     width=65,
-    wrap="word",            # wrap text by word within the text area
-    state="disabled",       # disable editing initially
+    wrap="word",  # wrap text by word within the text area
+    state="disabled",  # disable editing initially
     spacing2=5,
     spacing3=15,
 )
