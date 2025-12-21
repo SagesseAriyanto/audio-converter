@@ -1,11 +1,10 @@
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 import os
 import shutil
 from PIL import Image, ImageTk
 import pdfplumber
 import pyttsx3
-import pygame
 import threading
 
 pdf_path = None                     # Store path of uploaded PDF
@@ -60,15 +59,13 @@ def find_img(loc, size):
     img = Image.open(loc).resize(size)
     return ImageTk.PhotoImage(img)
 
-# TODO: Function to rewind or forward audio
-def rewind(direction):
-    pass
-
 
 # Function to play or pause audio
 def play_stop():
     global extracted_text
     engine = pyttsx3.init()
+    voices = engine.getProperty("voices")
+    engine.setProperty("voice", voices[1].id)
     engine.setProperty("rate", 172)
     engine.setProperty("volume", 0.9)
 
@@ -90,9 +87,8 @@ def play_stop():
 def generate_icons():
     convert_btn.pack_forget()
     control_frame.pack()
-    back_button.pack(side="left", padx=13, pady=5)
     pause_play_button.pack(side="left")
-    forward_button.pack(side="left", padx=13, pady=5)
+    speed_combo.pack(side="left", padx=12)
 
 
 # Function to extract text from PDF
@@ -106,11 +102,9 @@ def get_text_from_pdf():
     clean_text = text.replace('\n', ' ').strip()
     return clean_text
 
-
 # Function to convert PDF text to audio
 def convert_audio():
     global extracted_text
-    # Displaying the text frame
     text_frame.pack(pady=10)
     generate_icons()
     text_area.pack(
@@ -163,22 +157,10 @@ pdf_canvas = tk.Canvas(pdf_frame, width=25, height=25)
 pdf_canvas.create_image(12.5, 12.5, image=pdf_icon_photo)
 
 pdf_label = tk.Label(pdf_frame, cursor="hand2", font=("Arial", 10, "bold"))
-pdf_label.bind("<Button-1>", lambda e: save_pdf())                                       # make label clickable to save PDF for review
-
 
 # Control frame for backward, pause/play, and forward buttons
 control_frame = tk.Frame(main_frame)
 
-# Load navigation icons
-back_icon = find_img("./Assets/rewind.png", (30, 30))
-forward_icon = find_img("./Assets/fastforward.png", (30, 30))
-
-back_button = tk.Button(
-    control_frame,
-    image=back_icon,
-    command=rewind("back"),
-    bd=0,
-)
 
 play_icon = find_img("./Assets/play.png", (35, 35))
 stop_icon = find_img("./Assets/stop.png", (35, 35))
@@ -190,12 +172,14 @@ pause_play_button = tk.Button(
 )
 pause_play_button.image = play_icon  # Keep reference to the image
 
-forward_button = tk.Button(
-    control_frame,
-    image=forward_icon,
-    command=rewind("forward"),
-    bd=0,
+
+# Speed dropdown menu
+speed_combo = ttk.Combobox(
+    control_frame, values=["slow", "normal", "fast"], width=8,
 )
+speed_combo.set("normal")
+speed_combo.config(state="readonly")
+speed_combo.bind("<<ComboboxSelected>>", lambda e: speed_combo.selection_clear())
 
 
 # Convert pdf text audio
@@ -208,11 +192,10 @@ text_area = tk.Text(
     height=10,
     width=65,
     wrap="word",            # wrap text by word within the text area
-    state="disabled",      # disable editing initially
+    state="disabled",       # disable editing initially
     spacing2=5,
     spacing3=15,
 )
-
 
 # Update all frames and labels background color
 main_frame.config(bg=window_bg)
@@ -226,8 +209,6 @@ pdf_label.config(bg=window_bg)
 # Update buttons background color
 upload.config(bg=window_bg, activebackground=window_bg)
 convert_btn.config(bg=window_bg, activebackground=window_bg)
-back_button.config(bg=window_bg, activebackground=window_bg)
-forward_button.config(bg=window_bg, activebackground=window_bg)
 pause_play_button.config(bg=window_bg, activebackground=window_bg)
 
 window.mainloop()
