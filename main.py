@@ -4,13 +4,12 @@ import os
 import shutil
 from PIL import Image, ImageTk
 import pdfplumber
-from gtts import gTTS
-from pydub import AudioSegment
+import pyttsx3
 import pygame
 
 pdf_path = None                     # Store path of uploaded PDF
 audio_file = "./Assets/audio.mp3"   # audio file path
-audio_ready = False                 # Flag to check if audio is ready
+engine = None                       # pyttsx3 engine
 
 window = tk.Tk()
 window_bg = "#F5F3FF"
@@ -65,21 +64,21 @@ def find_img(loc, size):
 def rewind(direction):
     pass
 
+
 # Function to play or pause audio
 def play_pause():
-    global audio_ready
-    if not audio_ready:
-        return
-    if pygame.mixer.music.get_busy():
-        # Currently playing, so pause
-        pygame.mixer.music.pause()
+    global engine
+    # If icon is play, start playing audio
+    if pause_play_button.image == play_icon:
         pause_play_button.config(image=pause_icon)
         pause_play_button.image = pause_icon
+        engine.runAndWait()
     else:
-        # Currently paused, so play
-        pygame.mixer.music.unpause()
+    # If icon is pause, stop playing audio
         pause_play_button.config(image=play_icon)
         pause_play_button.image = play_icon
+        engine.stop()
+
 
 # Function to generate navigation icons for audio playback
 def generate_icons():
@@ -99,13 +98,14 @@ def get_text_from_pdf():
             text += page.extract_text()
     # cleaned_text = clean_text(text)
     clean_text = text.replace('\n', ' ').strip()
-    print(clean_text)
     return clean_text
 
 
 # Function to convert PDF text to audio
 def convert_audio():
-    global audio_ready, player
+    global engine, audio_file
+
+    # Displaying the text frame
     text_frame.pack(pady=10)
     generate_icons()
     text_area.pack(
@@ -113,7 +113,7 @@ def convert_audio():
         pady=5,
         fill="both",
     )
-    
+
     # Extract text from PDF and display it
     extracted_text = get_text_from_pdf()
     text_area.config(state="normal")        # temporarily enable to insert text
@@ -121,18 +121,11 @@ def convert_audio():
     text_area.insert("1.0", extracted_text) # insert extracted text
     text_area.config(state="disabled")      # disable editing again
 
-    # Generate audio file
-    tts = gTTS(text=extracted_text, lang="en", slow=False)
-    tts.save(audio_file)
-
-    # Convert to wav for better compatibility
-    sound = AudioSegment.from_mp3(audio_file)
-    sound.export(audio_file, format="wav")
-
-    pygame.mixer.init()
-    pygame.mixer.music.load(audio_file)
-    audio_ready = True
-
+    # TEST: Play audio immediately with pyttsx3
+    engine = pyttsx3.init()
+    engine.setProperty("rate", 150)
+    engine.setProperty("volume", 0.9)
+    engine.say(extracted_text)
 
 # Title Label
 title = tk.Label(
