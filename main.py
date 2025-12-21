@@ -6,10 +6,10 @@ from PIL import Image, ImageTk
 import pdfplumber
 import pyttsx3
 import pygame
+import threading
 
 pdf_path = None                     # Store path of uploaded PDF
-audio_file = "./Assets/audio.mp3"   # audio file path
-engine = None                       # pyttsx3 engine
+extracted_text = ""                 # Store extracted PDF text
 
 window = tk.Tk()
 window_bg = "#F5F3FF"
@@ -66,15 +66,21 @@ def rewind(direction):
 
 
 # Function to play or pause audio
-def play_pause():
-    global engine
+def play_stop():
+    global extracted_text
+    engine = pyttsx3.init()
+    engine.setProperty("rate", 172)
+    engine.setProperty("volume", 0.9)
+
     # If icon is play, start playing audio
     if pause_play_button.image == play_icon:
-        pause_play_button.config(image=pause_icon)
-        pause_play_button.image = pause_icon
-        engine.runAndWait()
+        pause_play_button.config(image=stop_icon)
+        pause_play_button.image = stop_icon
+        # Re-queue the text and run in separate thread
+        engine.say(extracted_text)
+        threading.Thread(target=engine.runAndWait, daemon=True).start()
     else:
-    # If icon is pause, stop playing audio
+        # If icon is stop, stop playing audio
         pause_play_button.config(image=play_icon)
         pause_play_button.image = play_icon
         engine.stop()
@@ -103,8 +109,7 @@ def get_text_from_pdf():
 
 # Function to convert PDF text to audio
 def convert_audio():
-    global engine, audio_file
-
+    global extracted_text
     # Displaying the text frame
     text_frame.pack(pady=10)
     generate_icons()
@@ -120,12 +125,6 @@ def convert_audio():
     text_area.delete("1.0", "end")          # clear any existing text
     text_area.insert("1.0", extracted_text) # insert extracted text
     text_area.config(state="disabled")      # disable editing again
-
-    # TEST: Play audio immediately with pyttsx3
-    engine = pyttsx3.init()
-    engine.setProperty("rate", 150)
-    engine.setProperty("volume", 0.9)
-    engine.say(extracted_text)
 
 # Title Label
 title = tk.Label(
@@ -182,12 +181,12 @@ back_button = tk.Button(
 )
 
 play_icon = find_img("./Assets/play.png", (35, 35))
-pause_icon = find_img("./Assets/pause.png", (35, 35))
+stop_icon = find_img("./Assets/stop.png", (35, 35))
 pause_play_button = tk.Button(
     control_frame,
     image=play_icon,
     bd=0,
-    command=play_pause,
+    command=play_stop,
 )
 pause_play_button.image = play_icon  # Keep reference to the image
 
